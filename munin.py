@@ -59,7 +59,9 @@ try:
     from flask_caching import Cache
 
     app = Flask(__name__)
-    flask_cache = Cache(config={"CACHE_TYPE": "simple", "CACHE_DEFAULT_TIMEOUT": 15})
+    flask_cache = Cache(
+        config={"CACHE_TYPE": "simple", "CACHE_DEFAULT_TIMEOUT": 15}
+    )
     flask_cache.init_app(app)
 except ImportError as e:
     traceback.print_exc()
@@ -77,7 +79,9 @@ PAYLOAD_SEC_API_KEY = "-"
 TAGS = ["HARMLESS", "SIGNED", "MSSOFT", "REVOKED", "EXPIRED"]
 
 # MalwareShare URL
-MAL_SHARE_API = "https://malshare.com/api.php?api_key=%s&action=details&hash=%s"
+MAL_SHARE_API = (
+    "https://malshare.com/api.php?api_key=%s&action=details&hash=%s"
+)
 MAL_SHARE_LINK = "https://malshare.com/sample.php?action=detail&hash="
 # Hybrid Analysis URL
 HYBRID_ANALYSIS_URL = "https://www.hybrid-analysis.com/api/v2/search/hash"
@@ -118,10 +122,10 @@ VALHALLA_URL = "https://valhalla.nextron-systems.com/api/v1/hashinfo"
 VALHALLA_MAX_QUERY_SIZE = 10000
 # maximum number of hashes to collect from matches of multiple Virustotal searches (300 comments per search, might be multiple per hash!) to be collected before querying VT and the other services
 VIRUSTOTAL_MAX_QUERY_SIZE = 600
-WAIT_TIME = (
-    17  # Public VT API allows 4 request per minute, so we wait 15 secs by default
+WAIT_TIME = 17  # Public VT API allows 4 request per minute, so we wait 15 secs by default
+QUOTA_EXCEEDED_WAIT_TIME = (
+    1200  # wait if quota is exceeded and --vtwaitquota is used
 )
-QUOTA_EXCEEDED_WAIT_TIME = 1200  # wait if quota is exceeded and --vtwaitquota is used
 VH_RULE_CUTOFF = 0
 VENDORS = [
     "Microsoft",
@@ -216,7 +220,11 @@ def processLine(line, debug):
         # Get Information
         # Virustotal
         vt_info = munin_vt.getVTInfo(
-            hashVal, args.debug, VENDORS, QUOTA_EXCEEDED_WAIT_TIME, args.vtwaitquota
+            hashVal,
+            args.debug,
+            VENDORS,
+            QUOTA_EXCEEDED_WAIT_TIME,
+            args.vtwaitquota,
         )
         info.update(vt_info)
         # Valhalla
@@ -315,7 +323,9 @@ def processLines(lines, resultFile, nocsv=False, debug=False, limit=0):
 
         # Empty result
         if not info or (
-            info["md5"] == "-" and info["sha1"] == "-" and info["sha256"] == "-"
+            info["md5"] == "-"
+            and info["sha1"] == "-"
+            and info["sha256"] == "-"
         ):
             # do nothing but don't "continue" bec of the possible "break" later
             pass
@@ -356,7 +366,9 @@ def processLines(lines, resultFile, nocsv=False, debug=False, limit=0):
 
         # only respect limit of > 0
         if limit and uncached_hashes >= limit:
-            print("Exiting because limit of %d uncached hashes reached!" % limit)
+            print(
+                "Exiting because limit of %d uncached hashes reached!" % limit
+            )
             break
 
         # Wait the remaining cooldown time
@@ -377,7 +389,9 @@ def fetchHash(line):
     # print hash_search
     if len(hash_search) > 0:
         hash = hash_search[0][1]
-        rest = " ".join(re.sub("({0}|;|,|:)".format(hash), " ", line).strip().split())
+        rest = " ".join(
+            re.sub("({0}|;|,|:)".format(hash), " ", line).strip().split()
+        )
         return hash, hashTypes[len(hash)], rest
     return "", "", ""
 
@@ -584,7 +598,8 @@ def getMISPInfo(hash):
                             "event_info": event_info,
                             "event_id": r["event_id"],
                             "comment": r["comment"],
-                            "url": "%s/events/view/%s" % (m_url, r["event_id"]),
+                            "url": "%s/events/view/%s"
+                            % (m_url, r["event_id"]),
                         }
                     )
                     events_added.append(r["event_id"])
@@ -651,7 +666,9 @@ def getHashlookup(md5, sha1, sha256):
                     headers={"Authorization": h_auth_key},
                 )
             if args.debug:
-                print("[D] Hashlookup Response Code: %s" % response.status_code)
+                print(
+                    "[D] Hashlookup Response Code: %s" % response.status_code
+                )
             if response.status_code == 200:
                 hashlookup_info.append(
                     {
@@ -767,7 +784,10 @@ def downloadHybridAnalysisSample(hash):
         # Prepare request
         preparedURL = HYBRID_ANALYSIS_DOWNLOAD_URL % hash
         # Set user agent string
-        headers = {"User-Agent": "Falcon Sandbox", "api-key": PAYLOAD_SEC_API_KEY}
+        headers = {
+            "User-Agent": "Falcon Sandbox",
+            "api-key": PAYLOAD_SEC_API_KEY,
+        }
         # Prepare Output filename and write the sample
         outfile = os.path.join(args.d, hash)
 
@@ -794,14 +814,17 @@ def downloadHybridAnalysisSample(hash):
             f_out = open(outfile, "wb")
             f_out.write(plaintextContent)
             f_out.close()
-            print("[+] Downloaded sample from Hybrid-Analysis to: %s" % outfile)
+            print(
+                "[+] Downloaded sample from Hybrid-Analysis to: %s" % outfile
+            )
 
             # Return successful
             return True
         else:
             if args.debug:
                 print(
-                    "[D] Unexpected content type: " + response.headers["Content-Type"]
+                    "[D] Unexpected content type: "
+                    + response.headers["Content-Type"]
                 )
             return False
     except ConnectionError as e:
@@ -824,14 +847,20 @@ def downloadMalwareBazarSample(hash):
     """
     # Check API Key
     if MAL_BAZAR_API_KEY == "" or MAL_BAZAR_API_KEY == "-":
-        print("You cannot download samples from Malware Bazar without an API key")
+        print(
+            "You cannot download samples from Malware Bazar without an API key"
+        )
         return False
     try:
         if args.debug:
             print("[D] Requesting download of sample from Malware Bazar")
 
         # Rquest
-        data = {"API-KEY": MAL_BAZAR_API_KEY, "query": "get_file", "sha256_hash": hash}
+        data = {
+            "API-KEY": MAL_BAZAR_API_KEY,
+            "query": "get_file",
+            "sha256_hash": hash,
+        }
         response = requests.post(
             MALWARE_BAZAR_API, data=data, timeout=3, proxies=connections.PROXY
         )
@@ -848,7 +877,10 @@ def downloadMalwareBazarSample(hash):
                     outfile = os.path.join(args.d, file.filename)
                     with open(outfile, "wb") as f_out:
                         f_out.write(f.read(file.filename))
-                    print("[+] Downloaded sample from Malware Bazar to: %s" % outfile)
+                    print(
+                        "[+] Downloaded sample from Malware Bazar to: %s"
+                        % outfile
+                    )
 
                 return True
 
@@ -874,7 +906,9 @@ def getTotalHashInfo(sha1):
         # Querying Hybrid Analysis
         if args.debug:
             print("[D] Querying Totalhash: %s" % preparedURL)
-        response = requests.get(preparedURL, proxies=connections.PROXY, timeout=15)
+        response = requests.get(
+            preparedURL, proxies=connections.PROXY, timeout=15
+        )
         # print "Response: '%s'" % response.content
         if (
             response.content
@@ -1147,7 +1181,8 @@ def platformChecks(info):
         if "anyrun_available" in info:
             if info["anyrun_available"]:
                 printHighlighted(
-                    "[!] Sample on ANY.RUN URL: %s" % (URL_ANYRUN % info["sha256"])
+                    "[!] Sample on ANY.RUN URL: %s"
+                    % (URL_ANYRUN % info["sha256"])
                 )
     except KeyError as e:
         if args.debug:
@@ -1172,7 +1207,8 @@ def platformChecks(info):
         if info["virusbay_available"]:
             printHighlighted(
                 "[!] Sample is on VirusBay "
-                "URL: %s TAGS: %s" % (info["vb_link"], ", ".join(info["vb_tags"]))
+                "URL: %s TAGS: %s"
+                % (info["vb_link"], ", ".join(info["vb_tags"]))
             )
     except KeyError as e:
         if args.debug:
@@ -1191,7 +1227,13 @@ def platformChecks(info):
                 printHighlighted(
                     "[!] VALHALLA YARA rule match "
                     "RULE: %s TYPE: %s AV: %s / %s TS: %s"
-                    % (m["rulename"], feed, m["positives"], m["total"], m["timestamp"])
+                    % (
+                        m["rulename"],
+                        feed,
+                        m["positives"],
+                        m["total"],
+                        m["timestamp"],
+                    )
                 )
     except KeyError as e:
         if args.debug:
@@ -1334,7 +1376,11 @@ def lookup(string):
 
 def signal_handler(signal, frame):
     if not args.nocache:
-        print("\n[+] Saving {0} cache entries to file {1}".format(len(cache), args.c))
+        print(
+            "\n[+] Saving {0} cache entries to file {1}".format(
+                len(cache), args.c
+            )
+        )
         saveCache(cache, args.c)
     showVTquota()
     sys.exit(0)
@@ -1347,7 +1393,9 @@ def showVTquota():
             allowed_day,
             used_month,
             allowed_month,
-        ) = munin_vt.checkVirustotalQuota(config.get("VIRUSTOTAL", "VT_USERID"))
+        ) = munin_vt.checkVirustotalQuota(
+            config.get("VIRUSTOTAL", "VT_USERID")
+        )
         print(
             "\n[+] VT Daily Quota used/allowed: {0}/{1} -- Monthly: {2}/{3} ".format(
                 used_day, allowed_day, used_month, allowed_month
@@ -1392,7 +1440,10 @@ if __name__ == "__main__":
         default="",
     )
     parser.add_argument(
-        "-o", help="Output file for results (CSV)", metavar="output", default=""
+        "-o",
+        help="Output file for results (CSV)",
+        metavar="output",
+        default="",
     )
     parser.add_argument(
         "--vtwaitquota",
@@ -1431,7 +1482,10 @@ if __name__ == "__main__":
         default=os.path.dirname(os.path.abspath(__file__)) + "/munin.ini",
     )
     parser.add_argument(
-        "-s", help="Folder with samples to process", metavar="sample-folder", default=""
+        "-s",
+        help="Folder with samples to process",
+        metavar="sample-folder",
+        default="",
     )
     parser.add_argument(
         "--comment",
@@ -1479,12 +1533,20 @@ if __name__ == "__main__":
         default=False,
     )
     parser.add_argument(
-        "--sort", action="store_true", help="Sort the input lines", default=False
+        "--sort",
+        action="store_true",
+        help="Sort the input lines",
+        default=False,
     )
     parser.add_argument(
-        "--web", action="store_true", help="Run Munin as web service", default=False
+        "--web",
+        action="store_true",
+        help="Run Munin as web service",
+        default=False,
     )
-    parser.add_argument("-w", help="Web service port", metavar="port", default=5000)
+    parser.add_argument(
+        "-w", help="Web service port", metavar="port", default=5000
+    )
     parser.add_argument(
         "--cli",
         action="store_true",
@@ -1536,10 +1598,14 @@ if __name__ == "__main__":
                 QUOTA_EXCEEDED_WAIT_TIME = ast.literal_eval(
                     config.get("VIRUSTOTAL", "QUOTA_EXCEEDED_WAIT_TIME")
                 )
-                WAIT_TIME = ast.literal_eval(config.get("VIRUSTOTAL", "WAIT_TIME"))
+                WAIT_TIME = ast.literal_eval(
+                    config.get("VIRUSTOTAL", "WAIT_TIME")
+                )
                 if (
                     config.has_option("VIRUSTOTAL", "VENDORS")
-                    and ast.literal_eval(config.get("VIRUSTOTAL", "VENDORS"))[0]
+                    and ast.literal_eval(config.get("VIRUSTOTAL", "VENDORS"))[
+                        0
+                    ]
                     == "ALL"
                 ):
                     VENDORS = ["ALL"]
@@ -1557,7 +1623,9 @@ if __name__ == "__main__":
                     config.get("VALHALLA", "VALHALLA_MAX_QUERY_SIZE")
                 )
                 if config.has_option("VALHALLA", "RULE_CUTOFF"):
-                    VH_RULE_CUTOFF = float(config.get("VALHALLA", "RULE_CUTOFF"))
+                    VH_RULE_CUTOFF = float(
+                        config.get("VALHALLA", "RULE_CUTOFF")
+                    )
             except Exception as e:
                 print(
                     "[E] Your config misses some key in the VALHALLA config - check the new munin.ini template and adapt it to your "
@@ -1592,7 +1660,9 @@ if __name__ == "__main__":
             fall_back = False
             try:
                 MISP_URLS = ast.literal_eval(config.get("MISP", "MISP_URLS"))
-                MISP_AUTH_KEYS = ast.literal_eval(config.get("MISP", "MISP_AUTH_KEYS"))
+                MISP_AUTH_KEYS = ast.literal_eval(
+                    config.get("MISP", "MISP_AUTH_KEYS")
+                )
             except Exception as e:
                 if args.debug:
                     traceback.print_exc()
@@ -1681,7 +1751,9 @@ if __name__ == "__main__":
                 contents, resultFile, nocsv=args.nocsv, debug=args.debug
             )
             if len(infos) == 0:
-                printHighlighted("[!] Content needs at least 1 hash value in it")
+                printHighlighted(
+                    "[!] Content needs at least 1 hash value in it"
+                )
 
     # Web Service -------------------------------------------------------------
     if args.web:
@@ -1718,7 +1790,9 @@ if __name__ == "__main__":
         pathComps = args.s.split(os.sep)
         if pathComps[-1] == "":
             del pathComps[-1]
-        alreadyExists, resultFile = generateResultFilename(pathComps[-1], args.o)
+        alreadyExists, resultFile = generateResultFilename(
+            pathComps[-1], args.o
+        )
         # Empty lines container
         lines = []
         for root, directories, files in os.walk(args.s, followlinks=False):
@@ -1768,10 +1842,14 @@ if __name__ == "__main__":
                     timestamp_str = match["timestamp"]
                     # example from https://nextronsystems.github.io/valhallaAPI/:  Mon, 28 Dec 2020 09:45:12 GMT
                     timestamp_hash = time.mktime(
-                        time.strptime(timestamp_str, "%a, %d %b %Y %H:%M:%S GMT")
+                        time.strptime(
+                            timestamp_str, "%a, %d %b %Y %H:%M:%S GMT"
+                        )
                     )
                 except Exception as e:
-                    print("Problems with converting timestamp %s" % timestamp_str)
+                    print(
+                        "Problems with converting timestamp %s" % timestamp_str
+                    )
 
                 if VH_RULE_CUTOFF:
                     # skip sample if
@@ -1783,7 +1861,8 @@ if __name__ == "__main__":
                         or now - vhmaxage > timestamp_hash
                         or (
                             rule_count[rulename]
-                            and len(rule_count) / rule_count[rulename] > VH_RULE_CUTOFF
+                            and len(rule_count) / rule_count[rulename]
+                            > VH_RULE_CUTOFF
                             and
                             # only skip after having 10+ samples of this rule to avoid problems on a fresh vt-hash-db.json
                             rule_count[rulename] > 10
@@ -1797,9 +1876,9 @@ if __name__ == "__main__":
 
                 # only use hashes, where at least vtminav AV triggered and gave a string
                 # type(positives) can be None in seldom cases if the returned json is "null"
-                if (type(positives) is int and positives >= int(args.vtminav)) or (
-                    not args.vtminav
-                ):
+                if (
+                    type(positives) is int and positives >= int(args.vtminav)
+                ) or (not args.vtminav):
                     # avoid duplicate hashes
                     if not hashh in lines:
                         lines.append(hashh)
@@ -1853,9 +1932,10 @@ if __name__ == "__main__":
 
                     # only use hashes, where at least vtminav AV triggered and gave a string
                     # type(positives) can be None if the returned json is "null"
-                    if (type(positives) is int and positives >= int(args.vtminav)) or (
-                        not args.vtminav
-                    ):
+                    if (
+                        type(positives) is int
+                        and positives >= int(args.vtminav)
+                    ) or (not args.vtminav):
                         # avoid duplicate hashes
                         if not hashh in lines:
                             lines.append(hashh)
@@ -1901,7 +1981,9 @@ if __name__ == "__main__":
 
     # Process the input lines
     try:
-        processLines(lines, resultFile, args.nocsv, args.debug, int(args.limit))
+        processLines(
+            lines, resultFile, args.nocsv, args.debug, int(args.limit)
+        )
     except UnicodeEncodeError as e:
         print(
             "[E] Error while processing some of the values due to unicode decode errors. "
@@ -1911,7 +1993,9 @@ if __name__ == "__main__":
     # Write Cache
     if not args.nocsv:
         print("\n[+] Results written to file {0}".format(resultFile))
-    print("\n[+] Saving {0} cache entries to file {1}".format(len(cache), args.c))
+    print(
+        "\n[+] Saving {0} cache entries to file {1}".format(len(cache), args.c)
+    )
 
     # Don't save cache if cache shouldn't be used
     if not args.nocache:

@@ -41,7 +41,9 @@ def getVTInfo(
             response_dict_code = requests.get(
                 VT_REPORT_URL % hash, headers=headers, proxies=PROXY
             )
-            response_dict = json.loads(response_dict_code.content.decode("utf-8"))
+            response_dict = json.loads(
+                response_dict_code.content.decode("utf-8")
+            )
             success = True
             if response_dict_code.status_code == 429:
                 print("VirusTotal Quota exceeded.")
@@ -73,7 +75,9 @@ def getVTInfo(
         info["hash"] = hash
         return info
 
-    info = processVirustotalSampleInfo(response_dict["data"], debug, vtallvendors)
+    info = processVirustotalSampleInfo(
+        response_dict["data"], debug, vtallvendors
+    )
     if "sha256" in info:
         info.update(searchVirustotalComments(info["sha256"], debug))
 
@@ -116,7 +120,9 @@ def getRetrohuntResults(
         try:
             response_json = json.loads(response.content)
         except ValueError:
-            print("[E] Non-JSON response from VT: Message %s" % response.content)
+            print(
+                "[E] Non-JSON response from VT: Message %s" % response.content
+            )
             break
 
         for file in response_json["data"]:
@@ -131,7 +137,9 @@ def getRetrohuntResults(
             file_info["hash"] = file[
                 "id"
             ]  # Add hash info manually, since no original hash exists
-            file_info["matching_rule"] = file["context_attributes"]["rule_name"]
+            file_info["matching_rule"] = file["context_attributes"][
+                "rule_name"
+            ]
             if not no_comments:
                 file_info.update(searchVirustotalComments(file["id"]))
             else:
@@ -211,7 +219,12 @@ def processVirustotalSampleInfo(sample_info, debug=False, VENDORS=["ALL"]):
             return info
         # Get file names
         info["filenames"] = list(
-            set(map(get_crossplatfrom_basename, sample_info["attributes"]["names"]))
+            set(
+                map(
+                    get_crossplatfrom_basename,
+                    sample_info["attributes"]["names"],
+                )
+            )
         )
         if "meaningful_name" in sample_info["attributes"]:
             meaningful_name = get_crossplatfrom_basename(
@@ -251,26 +264,39 @@ def processVirustotalSampleInfo(sample_info, debug=False, VENDORS=["ALL"]):
                     ]
                 # Get description
                 if "FileDescription" in sample_info["attributes"]["exiftool"]:
-                    info["description"] = sample_info["attributes"]["exiftool"][
-                        "FileDescription"
-                    ]
+                    info["description"] = sample_info["attributes"][
+                        "exiftool"
+                    ]["FileDescription"]
         # PE Info
         if "pe_info" in sample_info["attributes"]:
             if "imphash" in sample_info["attributes"]["pe_info"]:
                 # Get additional information
-                info["imphash"] = sample_info["attributes"]["pe_info"]["imphash"]
+                info["imphash"] = sample_info["attributes"]["pe_info"][
+                    "imphash"
+                ]
         # PE Signature
         if "signature_info" in sample_info["attributes"]:
             # Signer
             if "signers" in sample_info["attributes"]["signature_info"]:
-                info["signer"] = sample_info["attributes"]["signature_info"]["signers"]
+                info["signer"] = sample_info["attributes"]["signature_info"][
+                    "signers"
+                ]
             # Valid
             if "verified" in sample_info["attributes"]["signature_info"]:
-                if sample_info["attributes"]["signature_info"]["verified"] == "Signed":
+                if (
+                    sample_info["attributes"]["signature_info"]["verified"]
+                    == "Signed"
+                ):
                     info["signed"] = True
-                if "Revoked" in sample_info["attributes"]["signature_info"]["verified"]:
+                if (
+                    "Revoked"
+                    in sample_info["attributes"]["signature_info"]["verified"]
+                ):
                     info["revoked"] = True
-                if "Expired" in sample_info["attributes"]["signature_info"]["verified"]:
+                if (
+                    "Expired"
+                    in sample_info["attributes"]["signature_info"]["verified"]
+                ):
                     info["expired"] = True
 
         # Hashes
@@ -352,7 +378,9 @@ def searchVirustotalComments(sha256, debug=False):
         if len(r_comments["data"]) > 0:
             info["commenter"] = []
             for com in r_comments["data"]:
-                info["commenter"].append(com["relationships"]["author"]["data"]["id"])
+                info["commenter"].append(
+                    com["relationships"]["author"]["data"]["id"]
+                )
                 info["tags"].extend(com["attributes"]["tags"])
 
     except Exception:
@@ -365,7 +393,9 @@ def checkVirustotalQuota(VT_USERID):
     try:
         headers = {"x-apikey": VT_PUBLIC_API_KEY}
         # User info
-        r_user = requests.get(VT_USER_API % VT_USERID, headers=headers, proxies=PROXY)
+        r_user = requests.get(
+            VT_USER_API % VT_USERID, headers=headers, proxies=PROXY
+        )
         if not r_user.ok:
             print("[D] Could not query quota for user %s" % VT_USERID)
             return
@@ -385,7 +415,12 @@ def checkVirustotalQuota(VT_USERID):
         quota_allowed_month = r_user_json["data"]["attributes"]["quotas"][
             "api_requests_monthly"
         ]["allowed"]
-        return quota_used_day, quota_allowed_day, quota_used_month, quota_allowed_month
+        return (
+            quota_used_day,
+            quota_allowed_day,
+            quota_used_month,
+            quota_allowed_month,
+        )
 
     except Exception:
         if debug:
@@ -398,9 +433,15 @@ def commentVTSample(resource, comment):
     Posts a comment on a certain sample
     :return:
     """
-    params = {"apikey": VT_PUBLIC_API_KEY, "resource": resource, "comment": comment}
+    params = {
+        "apikey": VT_PUBLIC_API_KEY,
+        "resource": resource,
+        "comment": comment,
+    }
     response = requests.post(
-        "https://www.virustotal.com/vtapi/v2/comments/put", params=params, proxies=PROXY
+        "https://www.virustotal.com/vtapi/v2/comments/put",
+        params=params,
+        proxies=PROXY,
     )
     response_json = response.json()
     if response_json["response_code"] != 1:

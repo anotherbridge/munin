@@ -68,7 +68,9 @@ def printResult(info, count, total):
         )
 
     # Print the highlighted result line
-    printHighlighted("RESULT: %s" % (info["result"]), hl_color=info["res_color"])
+    printHighlighted(
+        "RESULT: %s" % (info["result"]), hl_color=info["res_color"]
+    )
 
 
 def printHighlighted(line, hl_color=Back.WHITE, tag_color=False):
@@ -81,11 +83,15 @@ def printHighlighted(line, hl_color=Back.WHITE, tag_color=False):
             "(HARMLESS|SIGNED|MS_SOFTWARE_CATALOGUE|MSSOFT|SUCCESSFULLY\sCOMMENTED)",
             re.VERBOSE,
         )
-        line = colorer.sub(Fore.BLACK + Back.GREEN + r"\1" + Style.RESET_ALL + "", line)
+        line = colorer.sub(
+            Fore.BLACK + Back.GREEN + r"\1" + Style.RESET_ALL + "", line
+        )
         colorer = re.compile(
             "(REVOKED|EXPLOIT|CVE-[0-9\-]+|OBFUSCATED|RUN\-FILE)", re.VERBOSE
         )
-        line = colorer.sub(Fore.BLACK + Back.RED + r"\1" + Style.RESET_ALL + "", line)
+        line = colorer.sub(
+            Fore.BLACK + Back.RED + r"\1" + Style.RESET_ALL + "", line
+        )
         colorer = re.compile(
             "(EXPIRED|VIA\-TOR|OLE\-EMBEDDED|RTF|ATTACHMENT|ASPACK|UPX|AUTO\-OPEN|MACROS)",
             re.VERBOSE,
@@ -103,7 +109,9 @@ def printHighlighted(line, hl_color=Back.WHITE, tag_color=False):
     line = colorer.sub(r"\n\1", line)
     # Standard
     colorer = re.compile("([A-Z_]{2,}:)\s", re.VERBOSE)
-    line = colorer.sub(Fore.BLACK + hl_color + r"\1" + Style.RESET_ALL + " ", line)
+    line = colorer.sub(
+        Fore.BLACK + hl_color + r"\1" + Style.RESET_ALL + " ", line
+    )
     print(line)
 
 
@@ -143,7 +151,9 @@ def printPeInfo(sample_info):
     for k, v in sample_info.items():
         if k in peInfo:
             if v != "-":
-                outString.append("{0}: {1}".format(k.upper(), removeNonAsciiDrop(v)))
+                outString.append(
+                    "{0}: {1}".format(k.upper(), removeNonAsciiDrop(v))
+                )
     if " ".join(outString):
         printHighlighted(" ".join(outString))
 
@@ -158,7 +168,9 @@ def removeNonAsciiDrop(string):
             nonascii = "".join(
                 i
                 for i in string
-                if (ord(i) < 127 and ord(i) > 31) or ord(i) == 10 or ord(i) == 13
+                if (ord(i) < 127 and ord(i) > 31)
+                or ord(i) == 10
+                or ord(i) == 13
             )
         except Exception as e:
             # Python 3 fallback

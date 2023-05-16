@@ -57,11 +57,15 @@ def is_pingable(ip):
     try:
         # Ping parameters as function of OS
         ping_str = (
-            "-n 1 -w 500" if platform.system().lower() == "windows" else "-c 1 -W 500"
+            "-n 1 -w 500"
+            if platform.system().lower() == "windows"
+            else "-c 1 -W 500"
         )
         # Ping
         subprocess.check_output(
-            "ping {0} {1}".format(ping_str, ip), stderr=subprocess.STDOUT, shell=True
+            "ping {0} {1}".format(ping_str, ip),
+            stderr=subprocess.STDOUT,
+            shell=True,
         )
         return True
     except Exception as e:
@@ -138,7 +142,11 @@ def generateResultFilename(inputFileName, outputFileName):
         else:
             resultFile = outputFileName
         if os.path.exists(resultFile):
-            print("[+] Found results CSV from previous run: {0}".format(resultFile))
+            print(
+                "[+] Found results CSV from previous run: {0}".format(
+                    resultFile
+                )
+            )
             print("[+] Appending results to file: {0}".format(resultFile))
             alreadyExists = True
         else:

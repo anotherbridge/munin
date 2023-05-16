@@ -5,7 +5,8 @@ __LICENSE__ = "Apache-2.0"
 import codecs
 import traceback
 
-# only write top10 vendors to CSV because file format can't handle changing number of them
+# Only write top10 vendors to CSV because file format can't handle
+# changing number of them
 VENDORS = [
     "Microsoft",
     "Kaspersky",
@@ -101,7 +102,7 @@ def writeCSV(info, resultFile):
     :return:
     """
     try:
-        with codecs.open(resultFile, "a", encoding="utf8") as fh_results:
+        with codecs.open(resultFile, "a", encoding="utf-8") as fh_results:
             fields = []
             # Print every field from the field list to the output file
             for field_pretty in CSV_FIELD_ORDER:
@@ -109,13 +110,15 @@ def writeCSV(info, resultFile):
                 field = info.get(field, "False")
                 try:
                     field = str(field).replace(r'"', r"\"").replace("\n", " ")
-                except AttributeError as e:
+                except AttributeError:
                     traceback.print_exc()
                 fields.append(field.replace(";", ","))
             # Append vendor scan results
             for vendor in VENDORS:
                 if vendor in info["vendor_results"]:
-                    fields.append(info["vendor_results"][vendor].replace(";", ","))
+                    fields.append(
+                        info["vendor_results"][vendor].replace(";", ",")
+                    )
                 else:
                     fields.append("-")
 
@@ -134,8 +137,8 @@ def writeCSVHeader(resultFile):
     :return:
     """
     try:
-        with open(resultFile, "w") as fh_results:
+        with open(resultFile, "w", encoding="utf-8") as fh_results:
             fh_results.write("%s;" % ";".join(CSV_FIELD_ORDER))
             fh_results.write("%s;\n" % ";".join(VENDORS))
-    except Exception as e:
+    except Exception:
         print("[E] Cannot write export file {0}".format(resultFile))

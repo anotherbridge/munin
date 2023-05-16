@@ -38,7 +38,9 @@ URLS = {
     "ip": r"https://www.virustotal.com/vtapi/v2/ip-address/report",
     "domain": r"https://www.virustotal.com/vtapi/v2/domain/report",
 }
-WAIT_TIME = 15  # Public API allows 4 request per minute, so we wait 15 secs by default
+WAIT_TIME = (
+    15  # Public API allows 4 request per minute, so we wait 15 secs by default
+)
 IP_WHITE_LIST = ["1.0.0.127", "127.0.0.1"]
 OWNER_WHITE_LIST = [
     "Google Inc.",
@@ -114,11 +116,15 @@ def is_pingable(ip):
     try:
         # Ping parameters as function of OS
         ping_str = (
-            "-n 1 -w 500" if platform.system().lower() == "windows" else "-c 1 -W 500"
+            "-n 1 -w 500"
+            if platform.system().lower() == "windows"
+            else "-c 1 -W 500"
         )
         # Ping
         subprocess.check_output(
-            "ping {0} {1}".format(ping_str, ip), stderr=subprocess.STDOUT, shell=True
+            "ping {0} {1}".format(ping_str, ip),
+            stderr=subprocess.STDOUT,
+            shell=True,
         )
         return True
     except Exception as e:
@@ -169,12 +175,19 @@ def print_highlighted(line, hl_color=Back.WHITE):
         )
         colorer = re.compile(r"([^\s]+) POSITIVES: ([0-9]+) ")
         line = colorer.sub(
-            Fore.RED + r"\1 " + "POSITIVES: " + Fore.RED + r"\2 " + Style.RESET_ALL,
+            Fore.RED
+            + r"\1 "
+            + "POSITIVES: "
+            + Fore.RED
+            + r"\2 "
+            + Style.RESET_ALL,
             line,
         )
         # Keyword highlight
         colorer = re.compile(r"([A-Z_]{2,}:)\s", re.VERBOSE)
-        line = colorer.sub(Fore.BLACK + hl_color + r"\1" + Style.RESET_ALL + " ", line)
+        line = colorer.sub(
+            Fore.BLACK + hl_color + r"\1" + Style.RESET_ALL + " ", line
+        )
         print(line)
     except Exception as e:
         pass
@@ -263,7 +276,9 @@ def process_elements(
                 if debug:
                     # Add to cache
                     status = "skipped"
-                    print("[D] IP {0} is a private IP - skipping".format(value))
+                    print(
+                        "[D] IP {0} is a private IP - skipping".format(value)
+                    )
                 continue
             # Skip unreachable systems
             if ping:
@@ -271,14 +286,17 @@ def process_elements(
                     # Add to cache
                     status = "skipped"
                     if debug:
-                        print("[D] IP {0} ping failed - skipping".format(value))
+                        print(
+                            "[D] IP {0} ping failed - skipping".format(value)
+                        )
                     continue
 
         # White lists
         for dom in DOMAIN_WHITE_LIST:
             if dom in value:
                 print_highlighted(
-                    "Domain white-listed - skipping this host SYSTEM: %s" % value
+                    "Domain white-listed - skipping this host SYSTEM: %s"
+                    % value
                 )
                 status = "skipped"
 
@@ -302,7 +320,9 @@ def process_elements(
 
         # Head -------------------------------------------------------------------------------------------------
         # Colorized head of each hash check
-        print_highlighted("\n{0}: {1}".format(str.upper(cat), value), Back.CYAN)
+        print_highlighted(
+            "\n{0}: {1}".format(str.upper(cat), value), Back.CYAN
+        )
 
         # VT API Request ---------------------------------------------------------------------------------------
         # Prepare VT API request
@@ -366,7 +386,8 @@ def process_elements(
                 for owl in OWNER_WHITE_LIST:
                     if owl in owner:
                         print_highlighted(
-                            "Owner white-listed - skipping this host OWNER: %s" % owner
+                            "Owner white-listed - skipping this host OWNER: %s"
+                            % owner
                         )
 
             # Resolutions
@@ -396,7 +417,9 @@ def process_elements(
                         if is_ip(new_value):
                             elements.append({"value": new_value, "type": "ip"})
                         else:
-                            elements.append({"value": new_value, "type": "domain"})
+                            elements.append(
+                                {"value": new_value, "type": "domain"}
+                            )
                 if "hosts" in shown_messages:
                     sys.stdout.write("\n")
 
@@ -473,7 +496,9 @@ def process_elements(
                 # Set rating
                 if ratio > 3 and rating == "clean":
                     rating = "suspicious"
-                if ratio > 10 and (rating == "clean" or rating == "suspicious"):
+                if ratio > 10 and (
+                    rating == "clean" or rating == "suspicious"
+                ):
                     rating = "malicious"
 
             # Type
@@ -487,13 +512,15 @@ def process_elements(
             result = "%s / %s" % (positives, total)
             print_highlighted("COUNTRY: {0} OWNER: {1}".format(country, owner))
             print_highlighted(
-                "POSITIVES: %s RATING: %s" % (result, rating), hl_color=res_color
+                "POSITIVES: %s RATING: %s" % (result, rating),
+                hl_color=res_color,
             )
 
         else:
             # Print the highlighted result line
             print_highlighted(
-                "POSITIVES: %s RATING: %s" % (result, rating), hl_color=res_color
+                "POSITIVES: %s RATING: %s" % (result, rating),
+                hl_color=res_color,
             )
 
         # CSV OUTPUT -------------------------------------------------------------------------------------------
@@ -562,7 +589,10 @@ def download_url(host_id, url):
         c.setopt(pycurl.CONNECTTIMEOUT, 10)
         c.setopt(pycurl.TIMEOUT, 180)
         c.setopt(pycurl.FOLLOWLOCATION, 1)
-        c.setopt(pycurl.USERAGENT, "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0)")
+        c.setopt(
+            pycurl.USERAGENT,
+            "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0)",
+        )
         c.setopt(c.WRITEFUNCTION, output.write)
         c.setopt(c.HEADERFUNCTION, header.write)
         c.setopt(pycurl.SSL_VERIFYHOST, 0)
@@ -593,12 +623,15 @@ def download_url(host_id, url):
         try:
             with open(out_filename, "wb") as f:
                 f.write(output.getvalue())
-                print_highlighted("[+] Successfully saved to FILE: %s" % out_filename)
+                print_highlighted(
+                    "[+] Successfully saved to FILE: %s" % out_filename
+                )
         except Exception as e:
             if args.debug:
                 traceback.print_exc()
             print(
-                "[-] Failed to write file %s (use --debug for more info)" % out_filename
+                "[-] Failed to write file %s (use --debug for more info)"
+                % out_filename
             )
     else:
         try:
@@ -611,7 +644,9 @@ def download_url(host_id, url):
                 )
             )
         except Exception as e:
-            print_highlighted("[-] Response CODE: %s" % str(c.getinfo(c.RESPONSE_CODE)))
+            print_highlighted(
+                "[-] Response CODE: %s" % str(c.getinfo(c.RESPONSE_CODE))
+            )
 
     output.close()
 
@@ -658,7 +693,9 @@ def header_function(header_raw):
 
 
 def signal_handler(signal, frame):
-    print("\n[+] Saving {0} cache entries to file {1}".format(len(cache), args.c))
+    print(
+        "\n[+] Saving {0} cache entries to file {1}".format(len(cache), args.c)
+    )
     saveCache(cache, args.c)
     sys.exit(0)
 
@@ -671,7 +708,11 @@ if __name__ == "__main__":
     print(Fore.BLACK + Back.WHITE)
     print(" ".ljust(80))
     print("   _________   _    _   ______  _____  ______          ".ljust(80))
-    print("  | | | | | \\ | |  | | | |  \\ \\  | |  | |  \\ \\     /.) ".ljust(80))
+    print(
+        "  | | | | | \\ | |  | | | |  \\ \\  | |  | |  \\ \\     /.) ".ljust(
+            80
+        )
+    )
     print("  | | | | | | | |  | | | |  | |  | |  | |  | |    /)\\| ".ljust(80))
     print("  |_| |_| |_| \\_|__|_| |_|  |_| _|_|_ |_|  |_|   // /  ".ljust(80))
     print('  > IP AND DOMAIN CHECKER                       /\'" "  '.ljust(80))
@@ -691,7 +732,10 @@ if __name__ == "__main__":
         default="",
     )
     parser.add_argument(
-        "-o", help="Output file for results (CSV)", metavar="output", default=""
+        "-o",
+        help="Output file for results (CSV)",
+        metavar="output",
+        default="",
     )
     parser.add_argument(
         "-m",
@@ -820,7 +864,11 @@ if __name__ == "__main__":
     if not args.nocsv:
         alreadyExists, result_file = generateResultFilename(args.f, args.o)
         if alreadyExists:
-            print("[+] Found results CSV from previous run: {0}".format(result_file))
+            print(
+                "[+] Found results CSV from previous run: {0}".format(
+                    result_file
+                )
+            )
             print("[+] Appending results to file: {0}".format(result_file))
         else:
             print("[+] Writing results to new file: {0}".format(result_file))
@@ -830,7 +878,9 @@ if __name__ == "__main__":
                         "IP;Rating;Owner;Country Code;Positives;Total;Malicious Samples;Hosts\n"
                     )
             except Exception as e:
-                print("[E] Cannot write CSV export file: {0}".format(result_file))
+                print(
+                    "[E] Cannot write CSV export file: {0}".format(result_file)
+                )
 
     # Process the input lines
     elements = process_lines(lines, args.debug)
@@ -848,7 +898,9 @@ if __name__ == "__main__":
     )
 
     # Write Cache
-    print("\n[+] Saving {0} cache entries to file {1}".format(len(cache), args.c))
+    print(
+        "\n[+] Saving {0} cache entries to file {1}".format(len(cache), args.c)
+    )
     saveCache(cache, args.c)
 
     print(Style.RESET_ALL)

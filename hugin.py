@@ -104,7 +104,9 @@ def main():
         )
 
     print("[+] Retrieving Retrohunt results ...")
-    found_files = munin_vt.getRetrohuntResults(args.r, not args.comments, args.debug)
+    found_files = munin_vt.getRetrohuntResults(
+        args.r, not args.comments, args.debug
+    )
     print("[+] Retrohunt results retrieved")
 
     csv_filename = args.csv_path
