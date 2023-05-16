@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# coding: utf-8
+__LICENSE__ = "Apache-2.0"
+
 import re
 import subprocess
 import platform

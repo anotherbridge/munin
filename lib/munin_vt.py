@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# coding: utf-8
+__LICENSE__ = "Apache-2.0"
+
 from datetime import datetime
 import json
 import math

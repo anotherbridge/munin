@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
+# coding: utf-8
 """Checks IPs and Hosts read from an input file on Virustotal"""
 
 __AUTHOR__ = "Florian Roth"
 __VERSION__ = "0.3 February 2019"
+__LICENSE__ = "Apache-2.0"
 
 """
 Install dependencies with:

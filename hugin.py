@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+# coding: utf-8
 
 __AUTHOR__ = "Max Altgelt"
 __VERSION__ = "0.2.0 March 2020"
+__LICENSE__ = "Apache-2.0"
 
 import argparse
 import collections
