@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 # coding: utf-8
-__LICENSE__ = "Apache-2.0"
-
-from datetime import datetime
 import json
 import math
-import requests
 import os
-import traceback
 import time
+import traceback
+from datetime import datetime
+
+import requests
+
 from lib.connections import PROXY
+
+__LICENSE__ = "Apache-2.0"
 
 RETROHUNT_URL = "https://www.virustotal.com/api/v3/intelligence/retrohunt_jobs"
 VT_COMMENT_API = (
@@ -58,7 +60,7 @@ def getVTInfo(
 
                     # to stay in while loop
                     success = False
-        except Exception as e:
+        except Exception:
             if debug:
                 traceback.print_exc()
     if not response_dict_code.ok:
@@ -108,7 +110,7 @@ def getRetrohuntResults(
     url = "%s/%s/matching_files?limit=300" % (RETROHUNT_URL, retrohunt_id)
     files = []
     while True:
-        response = requests.get(url, headers=headers, proxies=PROXY)
+        response = requests.get(url, headers=headers, proxies=PROXY, timeout=15)
 
         if not response.ok:
             print(

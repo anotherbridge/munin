@@ -2,11 +2,11 @@
 # coding: utf-8
 __LICENSE__ = "Apache-2.0"
 
-import re
-import subprocess
-import platform
-import socket
 import os
+import platform
+import re
+import socket
+import subprocess
 from datetime import datetime
 
 

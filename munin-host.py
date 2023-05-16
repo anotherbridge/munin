@@ -11,27 +11,32 @@ Install dependencies with:
 pip install simplejson colorama IPy pickle pycurl
 """
 
+import argparse
 import configparser
 import json
-import signal
-import urllib
-from urllib.parse import urlparse
-import urllib.request
-import pycurl
-from io import BytesIO
-import platform
-import time
-import re
 import os
-import sys
-import traceback
-import subprocess
-import argparse
+import platform
+import re
+import signal
 import socket
 import ssl
+import subprocess
+import sys
+import time
+import traceback
+import urllib
+import urllib.request
+from io import BytesIO
+from urllib.parse import urlparse
+
 import dns.resolver
+import pycurl
+from colorama import Back
+from colorama import Fore
+from colorama import Style
+from colorama import init
 from IPy import IP
-from colorama import init, Fore, Back, Style
+
 from lib.helper import generateResultFilename
 
 URLS = {
@@ -102,7 +107,7 @@ def is_resolvable(domain):
     try:
         socket.gethostbyname(domain)
         return True
-    except Exception as e:
+    except Exception:
         # traceback.print_exc()
         return False
 
@@ -127,7 +132,7 @@ def is_pingable(ip):
             shell=True,
         )
         return True
-    except Exception as e:
+    except Exception:
         # traceback.print_exc()
         return False
 
@@ -139,7 +144,7 @@ def saveCache(cache, fileName):
     :param fileName:
     :return:
     """
-    with open(fileName, "w") as fh:
+    with open(fileName, "w", encoding="utf-8") as fh:
         fh.write(json.dumps(cache))
 
 
@@ -150,9 +155,9 @@ def loadCache(fileName):
     :return:
     """
     try:
-        with open(fileName, "r") as fh:
+        with open(fileName, encoding="utf-8") as fh:
             return json.loads(fh.read()), True
-    except Exception as e:
+    except Exception:
         traceback.print_exc()
         return [], False
 
@@ -189,7 +194,7 @@ def print_highlighted(line, hl_color=Back.WHITE):
             Fore.BLACK + hl_color + r"\1" + Style.RESET_ALL + " ", line
         )
         print(line)
-    except Exception as e:
+    except Exception:
         pass
 
 
@@ -210,9 +215,9 @@ def process_lines(lines, debug=False):
 
         ips, domains = fetch_ip_and_domains(line)
         if debug:
-            if len(ips):
+            if ips:
                 print("[D] IPs: {0}".format(", ".join(ips)))
-            if len(domains):
+            if domains:
                 print("[D] Domains: {0}".format(", ".join(domains)))
 
         # Line number
@@ -348,12 +353,11 @@ def process_elements(
 
                 response_dict = json.loads(response)
                 success = True
-            except Exception as e:
+            except Exception:
                 if debug:
                     print("RESPONSE: %s" % response)
                     traceback.print_exc()
                     # print "Error requesting VT results"
-                pass
         if debug:
             print(json.dumps(response_dict, indent=4, sort_keys=True))
 
@@ -549,7 +553,7 @@ def process_elements(
                 samples_value,
                 targets_value,
             )
-            with open(result_file, "a") as fh_results:
+            with open(result_file, "a", encoding="utf-8") as fh_results:
                 fh_results.write(result_line)
 
         # Add to cache -----------------------------------------------------------------------------------------

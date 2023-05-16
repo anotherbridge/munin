@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 # coding: utf-8
-__LICENSE__ = "Apache-2.0"
-
-from colorama import init, Fore, Back, Style
 import re
+
+from colorama import Back
+from colorama import Fore
+from colorama import Style
+__LICENSE__ = "Apache-2.0"
 
 
 def printResult(info, count, total):

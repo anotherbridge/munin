@@ -11,37 +11,44 @@ Install dependencies with:
 pip install -r requirements.txt
 pip3 install -r requirements.txt
 """
+import argparse
+import ast
 import codecs
 import configparser
-import requests
-from requests.auth import HTTPBasicAuth
-import time
-import re
-import os
+import gzip
+import hashlib
+import json
+import logging
 import math
-import ast
+import os
+import re
+import shutil
 import signal
 import sys
-import json
-import hashlib
-import codecs
+import time
 import traceback
-import argparse
-import logging
-import gzip
-import pyzipper
-import shutil
-
-from valhallaAPI.valhalla import ValhallaAPI
 from collections import defaultdict
-from io import BytesIO
 from datetime import datetime
-from colorama import init, Fore, Back, Style
-from lib.helper import generateResultFilename
-import lib.munin_vt as munin_vt
-from lib.munin_csv import writeCSVHeader, writeCSV, CSV_FIELDS
+from io import BytesIO
+
+import pyzipper
+import requests
+from colorama import Back
+from colorama import Fore
+from colorama import Style
+from colorama import init
+from requests.auth import HTTPBasicAuth
+from valhallaAPI.valhalla import ValhallaAPI
+
 import lib.connections as connections
-from lib.munin_stdout import printResult, printHighlighted, printKeyLine
+import lib.munin_vt as munin_vt
+from lib.helper import generateResultFilename
+from lib.munin_csv import CSV_FIELDS
+from lib.munin_csv import writeCSV
+from lib.munin_csv import writeCSVHeader
+from lib.munin_stdout import printHighlighted
+from lib.munin_stdout import printKeyLine
+from lib.munin_stdout import printResult
 
 # Handle modules that may be difficult to install
 # e.g. pymisp has no Debian package, selenium is obsolete
